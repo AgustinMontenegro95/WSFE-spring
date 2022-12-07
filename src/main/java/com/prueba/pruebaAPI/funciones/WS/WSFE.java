@@ -12,10 +12,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
 import org.json.XML;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class WSFE {
 
     private String resultadoFinal;
+    
+    @Autowired
+    GeneracionPDF generacionPDF;
     
     public WSFE() {
         this.resultadoFinal = "";
@@ -59,6 +63,7 @@ public class WSFE {
                     if (informacion.getGenerarPdf()) {
                         try {
                             generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
+                            //generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
                             urlPublica = generacionPDF.getUrlPublica();
                         } catch (IOException ex) {
                             Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);

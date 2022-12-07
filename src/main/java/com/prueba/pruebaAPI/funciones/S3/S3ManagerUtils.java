@@ -32,7 +32,7 @@ public class S3ManagerUtils {
     
 
     public S3ManagerUtils() {
-        s3 = new AmazonConfig().s3();
+        s3 =  new AmazonConfig().s3();
     }
 
     

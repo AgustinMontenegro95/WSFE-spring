@@ -14,14 +14,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Service
 public class GeneracionPDF {
+    
+
+    
 
     private String urlPublica = "";
+
+    public GeneracionPDF() {
+    }
     
     public void generarPDF(Comprobante informacion, String[] informacionCAE) throws FileNotFoundException {
-
+        
+        
+        
         Document document = new Document(PageSize.A4, 20, 20, 25, 20);
         try {
 
