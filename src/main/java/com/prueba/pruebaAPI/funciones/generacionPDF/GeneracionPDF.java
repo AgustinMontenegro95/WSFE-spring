@@ -322,9 +322,15 @@ public class GeneracionPDF {
 
     public void subirPDFServidorAWSs3(Comprobante informacion, String nroComprobante) {
         MultipartFile multipartFile = null;
+        String tipoFact = "";
+        if(informacion.getFeCabReq().getCbteTipo() == 1 | informacion.getFeCabReq().getCbteTipo() == 2 | informacion.getFeCabReq().getCbteTipo() == 3){
+            tipoFact = "A";
+        } else {
+            tipoFact = "B";
+        }
         try {
-            multipartFile = new MockMultipartFile("prueba.pdf", new FileInputStream(new File("D:\\PruebaAPI\\temporal.pdf")));
-            String fileName = "recursos/FE/" + informacion.getEmpresa().getNombre() + "/" + informacion.getCliente().getDniCuit() + "/" + nroComprobante + ".pdf";
+            multipartFile = new MockMultipartFile("prueba.pdf", new FileInputStream(new File("C:\\Users\\maximiliano.coronel\\Documents\\NetBeansProjects\\WSFE-spring\\temporal.pdf")));
+            String fileName = "recursos/FE/" + informacion.getEmpresa().getNombre() + "/" + informacion.getCliente().getDniCuit() + "/" + informacion.getFeCabReq().getPtoVta() + "-" + tipoFact + "-" + nroComprobante + ".pdf";
 
             S3ManagerUtils s3ManagerUtils = new S3ManagerUtils();
             s3ManagerUtils.uploadMultipartFile(fileName, multipartFile.getInputStream(), multipartFile.getContentType(), true);
@@ -1419,7 +1425,7 @@ public class GeneracionPDF {
         PdfPCell cellQR1 = new PdfPCell();
         Image imagenQR = null;
         try {
-            imagenQR = Image.getInstance("D:\\PruebaAPI\\images\\logoQR.png");
+            imagenQR = Image.getInstance("C:\\Users\\maximiliano.coronel\\Documents\\NetBeansProjects\\WSFE-spring\\images\\logoQR.png");
             cellQR1.setImage(imagenQR);
             cellQR1.setBorder(-1);
         } catch (BadElementException | IOException ex) {
@@ -1458,7 +1464,7 @@ public class GeneracionPDF {
         PdfPCell cellQR2 = new PdfPCell();
         Image imagenLogo = null;
         try {
-            imagenLogo = Image.getInstance("D:\\PruebaAPI\\images\\logo_afip.jpg");
+            imagenLogo = Image.getInstance("C:\\Users\\maximiliano.coronel\\Documents\\NetBeansProjects\\WSFE-spring\\images\\logo_afip.jpg");
             imagenLogo.setWidthPercentage(70);
             cellQR2.setImage(imagenLogo);
             cellQR2.setBorder(-1);

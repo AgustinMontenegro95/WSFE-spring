@@ -105,7 +105,7 @@ public class RequestWSAA {
 
             // Se crea un InputStream para cargar el certificado junto con la clave en el almacen de key (ks) y luego se cierra el InputStream
             try {
-                InputStream hiloEntrada = new FileInputStream("D:\\PruebaAPI\\certs\\MiCertificado.pfx");
+                InputStream hiloEntrada = new FileInputStream("C:\\Users\\maximiliano.coronel\\Documents\\NetBeansProjects\\WSFE-spring\\certs\\MiCertificado.pfx");
                 ks.load(hiloEntrada, "test".toCharArray());
                 hiloEntrada.close();
             } catch (IOException e) {

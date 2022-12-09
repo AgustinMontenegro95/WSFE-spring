@@ -17,14 +17,23 @@ public class Validacion {
     }
 
     public boolean validar() throws ParseException {
+        boolean validado = true;
+        
         errores = new ArrayList<>();
-        if (validacionAuth() && validacionFeCabReq() && validacionFeDetReq()) {
-            return true;
-        } else {
-            GeneracionJsonError gestionErrores = new GeneracionJsonError(errores);
-            gestionErrores.generarJson();
-            return false;
+        
+        if(!validacionAuth()){
+            validado = false;
         }
+        
+        if(!validacionFeCabReq()){
+            validado = false;
+        }
+        
+        if(!validacionFeDetReq()){
+            validado = false;
+        }
+        
+        return validado;
     }
 
     public boolean validarFecha(String fecha) {
@@ -206,6 +215,23 @@ public class Validacion {
             }
 
         }
+        
+        if(!validacionDetalleFactura()){
+            result = false;
+        }
+        
+        if (informacion.getEmpresa() != null){
+            if(!validacionEmpresa()){
+                result = false;
+            }
+        }
+        
+        if(informacion.getCliente() != null){
+            if(!validacionCliente()){
+                result = false;
+            }
+        }
+        
         return result;
     }
 
@@ -277,7 +303,6 @@ public class Validacion {
         return result;
     }
         
-    
     private boolean validacionCompradores() {
         boolean result = true;
 
@@ -298,6 +323,33 @@ public class Validacion {
         return result;
     }
 
+    private boolean validacionDetalleFactura(){
+        if(informacion.getDetalleFactura() == null){
+            errores.add("La lista de detalles de la factura esta vacia");
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    private boolean validacionEmpresa(){
+        if(informacion.getEmpresa().getNombre().isBlank() || informacion.getEmpresa().getRazonSocial().isBlank() || informacion.getEmpresa().getIngBrutos().isBlank() || informacion.getEmpresa().getFchIniAct().isBlank() || informacion.getEmpresa().getDomicilioComercial().isBlank() || informacion.getEmpresa().getCondIva().isBlank()){
+            errores.add("Los datos de la empresa no estan correctamente cargados");
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    private boolean validacionCliente(){
+        if(informacion.getCliente().getApNoRaSo().isBlank() || informacion.getCliente().getCondIva().isBlank() ||informacion.getCliente().getCondVta().isBlank() || informacion.getCliente().getDniCuit().isBlank() || informacion.getCliente().getDomicilio().isBlank()){
+            errores.add("Los datos del cliente no estan correctamente cargados");
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
     public List<String> getError() {
         return errores;
     }

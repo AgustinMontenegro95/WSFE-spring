@@ -17,18 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class WSFE {
 
     private String resultadoFinal;
-    
+
     @Autowired
     GeneracionPDF generacionPDF;
-    
+
     public WSFE() {
         this.resultadoFinal = "";
     }
-    
-    
+
     public synchronized String conexion(Comprobante informacion) {
-        System.out.println(informacion.toString());
-        System.out.println(informacion.getEmpresa().getRazonSocial());
         Validacion validacion = new Validacion(informacion);
         FECAESolicitar feCAE = new FECAESolicitar();
         ConnectAndResponseWSAA con = new ConnectAndResponseWSAA();
@@ -59,7 +56,6 @@ public class WSFE {
                     informacion.getAuth().setSign(resWSAA[1]);
                     System.out.println("getSign: " + informacion.getAuth().getSign());
                     responseFeCAESolicitar = feCAE.callSoapWebService(informacion);
-                    System.out.println("Solicita PDF: "+informacion.getGenerarPdf());
                     if (informacion.getGenerarPdf()) {
                         try {
                             generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
@@ -70,14 +66,18 @@ public class WSFE {
                         }
                     }
                     //generar respuesta json
-                    generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
+                    resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
                 } else {
-                    GeneracionJsonError generacionJsonError = new GeneracionJsonError();
-                    generacionJsonError.agregarError("El token y la firma estan vencidos");
-                    for (int i = 0; i < generacionJsonError.recuperarErrores().size(); i++) {
-                        resultadoFinal += generacionJsonError.recuperarErrores().get(i);
-                        System.out.println(resultadoFinal);
+                    if (validacion.getError().size() > 1) {
+                        resultadoFinal = "{";
+                        for (int i = 0; i < validacion.getError().size() - 1; i++) {
+                            resultadoFinal += (validacion.getError().get(i) + ",");
+                            System.out.println(resultadoFinal);
+                        }
+                        resultadoFinal += validacion.getError().get(validacion.getError().size() - 1);
+                        resultadoFinal += "}";
                     }
+                    resultadoFinal = validacion.getError().get(1);
                 }
             } else {
                 //verificar que tEnvio no esta caducado
@@ -86,7 +86,7 @@ public class WSFE {
                 if (dateTime.isBefore(tEnvio)) {
                     responseFeCAESolicitar = feCAE.callSoapWebService(informacion);
                     System.out.println("Tiempo correcto");
-                    System.out.println("Solicita PDF: "+informacion.getGenerarPdf());
+                    System.out.println("Solicita PDF: " + informacion.getGenerarPdf());
                     if (informacion.getGenerarPdf()) {
                         try {
                             generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
@@ -95,7 +95,7 @@ public class WSFE {
                             Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                    generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
+                    resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
                 } else {
                     //llamar al wsaa
                     resWSAA = con.obtenerRespuesta();
@@ -105,7 +105,7 @@ public class WSFE {
                         informacion.getAuth().setToken(resWSAA[0]);
                         informacion.getAuth().setSign(resWSAA[1]);
                         responseFeCAESolicitar = feCAE.callSoapWebService(informacion);
-                        System.out.println("Solicita PDF: "+informacion.getGenerarPdf());
+                        System.out.println("Solicita PDF: " + informacion.getGenerarPdf());
                         if (informacion.getGenerarPdf()) {
                             try {
                                 generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
@@ -115,23 +115,34 @@ public class WSFE {
                             }
                         }
                         //generar respuesta json
-                        generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
+                        resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
                         System.out.println("Tiempo incorrecto");
                     } else {
-                        GeneracionJsonError generacionJsonError = new GeneracionJsonError();
-                        generacionJsonError.agregarError("El token y la firma estan vencidos");
-                        for (int i = 0; i < generacionJsonError.recuperarErrores().size(); i++) {
-                            resultadoFinal += generacionJsonError.recuperarErrores().get(i);
-                            System.out.println(resultadoFinal);
+                        if (validacion.getError().size() > 1) {
+                            resultadoFinal = "{";
+                            for (int i = 0; i < validacion.getError().size() - 1; i++) {
+                                resultadoFinal += (validacion.getError().get(i) + ",");
+                                System.out.println(resultadoFinal);
+                            }
+                            resultadoFinal += validacion.getError().get(validacion.getError().size() - 1);
+                            resultadoFinal += "}";
                         }
+                        resultadoFinal = validacion.getError().get(0);
 
                     }
 
                 }
             }
         } else {
-            System.out.println("Validacion false");
-            //envio json de error
+            if (validacion.getError().size() > 0) {
+                resultadoFinal = "{";
+                for (int i = 0; i < validacion.getError().size() - 1; i++) {
+                    resultadoFinal += (validacion.getError().get(i) + ",");
+                    System.out.println(resultadoFinal);
+                }
+                resultadoFinal += validacion.getError().get(validacion.getError().size() - 1);
+                resultadoFinal += "}";
+            }
         }
         return resultadoFinal;
     }
@@ -140,7 +151,7 @@ public class WSFE {
         int PRETTY_PRINT_INDENT_FACTOR = 4;
         JSONObject xmlJSONObj = XML.toJSONObject(responseFeCAESolicitar[0]);
         String log = xmlJSONObj.toString(PRETTY_PRINT_INDENT_FACTOR);
-        
+
         String result = "{\"FeCAESolicitar\": {"
                 + "\"Resultado\":\"" + responseFeCAESolicitar[1] + "\","
                 + "\"FchProceso\":\"" + responseFeCAESolicitar[2] + "\","
@@ -155,7 +166,7 @@ public class WSFE {
                 result += ",\"Actualizacion\": {"
                         + "\"Token\":\"" + resWSAA[0] + "\","
                         + "\"Sign\":\"" + resWSAA[1] + "\","
-                        + "\"FchVto\":\"" + resWSAA[2] + "\"}";
+                        + "\"FchVto\":\"" + resWSAA[2] + "\"}}";
             }
         } else {
             result += "}";

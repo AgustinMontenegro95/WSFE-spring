@@ -107,13 +107,3 @@ public class FECompUltimoAutorizado {
     }
 
 }
-
-/* Componentes de una aplicacion Android
- 1 - Vistas: 
- 2 - Layout
- 3 - Activity
- 4 - Fragment
- 5 - Intencion
- 6 - Receptor de anuncios broadcast
- 7 - Administrador de contenido
-*/

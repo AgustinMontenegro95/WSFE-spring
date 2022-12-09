@@ -18,15 +18,7 @@ public class ConnectAndResponseWSAA {
         Properties prop = new Properties();
         String respuesta = null;
 
-        System.setProperty("https.proxyHost", "");
-        System.setProperty("https.proxyPort", "8080");
-
-        // Propiedades de red
-        System.setProperty("https.proxyHost", prop.getProperty("https_proxy", ""));
-        System.setProperty("https.proxyPort", prop.getProperty("https_proxy_port", "8080"));
-        System.setProperty("https.proxyUser", prop.getProperty("https_proxy_user", ""));
-        System.setProperty("https.proxyPassword", prop.getProperty("http_proxy_password", ""));
-        System.setProperty("java.net.useSystemProxies", "true");
+        
 
         // Obtiene la respuesta utilizando el metodo para llamar al WSAA
         try {
