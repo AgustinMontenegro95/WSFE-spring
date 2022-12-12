@@ -82,9 +82,6 @@ public class WSFE {
                             resultadoFinal += "}";
                         }
                     }
-
-                    
-                    
                 }
             } else {
                 //verificar que tEnvio no esta caducado
@@ -125,14 +122,19 @@ public class WSFE {
                         resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
                         System.out.println("Tiempo incorrecto");
                     } else {
+                        validacion.agregarError("\" Error \" : \"El CEE ya posee un Ticket de Acceso valido para el WS solicitado\"");
                         if (validacion.getError().size() > 0) {
-                            resultadoFinal = "{";
-                            for (int i = 0; i < validacion.getError().size() - 1; i++) {
-                                resultadoFinal += (validacion.getError().get(i) + ",");
-                                System.out.println(resultadoFinal);
+                            if (validacion.getError().size() == 1) {
+                                resultadoFinal = "{ " + validacion.getError().get(0) + " }";
+                            } else {
+                                resultadoFinal = "{";
+                                for (int i = 0; i < validacion.getError().size() - 1; i++) {
+                                    resultadoFinal += (validacion.getError().get(i) + ",");
+                                    System.out.println(resultadoFinal);
+                                }
+                                resultadoFinal += validacion.getError().get(validacion.getError().size() - 1);
+                                resultadoFinal += "}";
                             }
-                            resultadoFinal += validacion.getError().get(validacion.getError().size() - 1);
-                            resultadoFinal += "}";
                         }
                     }
 

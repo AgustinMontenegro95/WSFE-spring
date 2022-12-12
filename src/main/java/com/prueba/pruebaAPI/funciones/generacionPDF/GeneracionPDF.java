@@ -19,19 +19,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class GeneracionPDF {
-    
-
-    
 
     private String urlPublica = "";
 
     public GeneracionPDF() {
     }
-    
+
     public void generarPDF(Comprobante informacion, String[] informacionCAE) throws FileNotFoundException {
-        
-        
-        
+
         Document document = new Document(PageSize.A4, 20, 20, 25, 20);
         try {
 
@@ -56,13 +51,18 @@ public class GeneracionPDF {
 
             document.add(saltoLinea(1));
 
+            if (informacion.getPeriodoFacturado() != null) {
+                document.add(periodoFacturado(informacion));
+                document.add(saltoLinea(1));
+            }
+
             document.add(generarInformacionCliente1(informacion));
             document.add(generarInformacionCliente2(informacion));
             document.add(generarInformacionCliente3());
 
             document.add(saltoLinea(1));
 
-            if(informacion.getFacturaDetalleAlicIVA(0) == 0){
+            if (informacion.getFacturaDetalleAlicIVA(0) == 0) {
                 document.add(crearTablaInformacionB(informacion));
             } else {
                 document.add(crearTablaInformacionA(informacion));
@@ -122,7 +122,7 @@ public class GeneracionPDF {
             }
 
             document.add(saltoLinea(5));
-            
+
             //3er parte
             if (informacion.getFeCabReq().getCbteTipo() == 1 || informacion.getFeCabReq().getCbteTipo() == 2 || informacion.getFeCabReq().getCbteTipo() == 3) {
 
@@ -181,6 +181,11 @@ public class GeneracionPDF {
             document.add(contenedor_Info);
 
             document.add(saltoLinea(1));
+            
+            if (informacion.getPeriodoFacturado() != null) {
+                document.add(periodoFacturado(informacion));
+                document.add(saltoLinea(1));
+            }
 
             document.add(generarInformacionCliente1(informacion));
             document.add(generarInformacionCliente2(informacion));
@@ -188,12 +193,11 @@ public class GeneracionPDF {
 
             document.add(saltoLinea(1));
 
-            if(informacion.getFacturaDetalleAlicIVA(0) == 0){
+            if (informacion.getFacturaDetalleAlicIVA(0) == 0) {
                 document.add(crearTablaInformacionB(informacion));
             } else {
                 document.add(crearTablaInformacionA(informacion));
             }
-            
 
             document.add(saltoLinea(5));
 
@@ -242,7 +246,7 @@ public class GeneracionPDF {
 
             //document.add(saltoLinea(2));
             document.newPage();
-            
+
             //Tercera pagina
             document.add(crearHeader("TRIPLICADO"));
             document.add(crearDivision(informacion));
@@ -255,6 +259,11 @@ public class GeneracionPDF {
             document.add(contenedor_Info);
 
             document.add(saltoLinea(1));
+            
+            if (informacion.getPeriodoFacturado() != null) {
+                document.add(periodoFacturado(informacion));
+                document.add(saltoLinea(1));
+            }
 
             document.add(generarInformacionCliente1(informacion));
             document.add(generarInformacionCliente2(informacion));
@@ -262,8 +271,7 @@ public class GeneracionPDF {
 
             document.add(saltoLinea(1));
 
-             
-            if(informacion.getFacturaDetalleAlicIVA(0) == 0){
+            if (informacion.getFacturaDetalleAlicIVA(0) == 0) {
                 document.add(crearTablaInformacionB(informacion));
             } else {
                 document.add(crearTablaInformacionA(informacion));
@@ -322,10 +330,50 @@ public class GeneracionPDF {
         subirPDFServidorAWSs3(informacion, informacionCAE[7]);
     }
 
+    public PdfPTable periodoFacturado(Comprobante informacion) throws DocumentException {
+        PdfPTable periodoFacturado = new PdfPTable(3);
+
+        PdfPCell desde = new PdfPCell();
+        desde.setBorder(0);
+        desde.setBorderWidthLeft(1);
+        desde.setBorderWidthTop(1);
+        desde.setBorderWidthBottom(1);
+        desde.setPaddingTop(5);
+        desde.setPaddingBottom(5);
+        desde.setPaddingLeft(5);
+        PdfPTable desdeTable = generarNegrita("Período Facturado Desde:", informacion.getPeriodoFacturado().getPfDesde(), 50, 50);
+        desde.addElement(desdeTable);
+
+        PdfPCell hasta = new PdfPCell();
+        hasta.setBorder(0);
+        hasta.setBorderWidthBottom(1);
+        hasta.setBorderWidthTop(1);
+        hasta.setPaddingTop(5);
+        PdfPTable hastaTable = generarNegrita("Hasta: ", informacion.getPeriodoFacturado().getPfHasta(), 30, 70);
+        hasta.addElement(hastaTable);
+
+        PdfPCell vtoPago = new PdfPCell();
+        vtoPago.setBorder(0);
+        vtoPago.setBorderWidthTop(1);
+        vtoPago.setBorderWidthRight(1);
+        vtoPago.setBorderWidthBottom(1);
+        vtoPago.setPaddingTop(5);
+        PdfPTable vtoPagoTable = generarNegrita("Fecha de Vto. para el pago: ", informacion.getPeriodoFacturado().getPfVencimiento(), 50, 50);
+        vtoPago.addElement(vtoPagoTable);
+
+        periodoFacturado.setWidthPercentage(100);
+        periodoFacturado.setWidths(new float[]{40, 20, 40});
+        periodoFacturado.addCell(desde);
+        periodoFacturado.addCell(hasta);
+        periodoFacturado.addCell(vtoPago);
+
+        return periodoFacturado;
+    }
+
     public void subirPDFServidorAWSs3(Comprobante informacion, String nroComprobante) {
         MultipartFile multipartFile = null;
         String tipoFact = "";
-        if(informacion.getFeCabReq().getCbteTipo() == 1 | informacion.getFeCabReq().getCbteTipo() == 2 | informacion.getFeCabReq().getCbteTipo() == 3){
+        if (informacion.getFeCabReq().getCbteTipo() == 1 | informacion.getFeCabReq().getCbteTipo() == 2 | informacion.getFeCabReq().getCbteTipo() == 3) {
             tipoFact = "A";
         } else {
             tipoFact = "B";
@@ -340,9 +388,9 @@ public class GeneracionPDF {
         } catch (Exception ex) {
             Logger.getLogger(GeneracionPDF.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         System.out.println("Soy un URL: " + urlPublica);
-        System.out.println("Respuesta: " + "recursos/FE/" + informacion.getEmpresa().getNombre() + "/" + informacion.getCliente().getDniCuit() + "/" + informacion.getFeCabReq().getCbteTipo() + "/" +nroComprobante + ".pdf");
+        System.out.println("Respuesta: " + "recursos/FE/" + informacion.getEmpresa().getNombre() + "/" + informacion.getCliente().getDniCuit() + "/" + informacion.getFeCabReq().getCbteTipo() + "/" + nroComprobante + ".pdf");
     }
 
     private PdfPTable saltoLinea(int cantSaltos) {
@@ -983,37 +1031,36 @@ public class GeneracionPDF {
         return contenedor_categoria;
     }
 
-   
     private PdfPCell crearInfoEmpresa(Comprobante informacion) throws DocumentException {
         PdfPCell informacionEmpresa = new PdfPCell();
         informacionEmpresa.setBorder(Rectangle.BOTTOM | Rectangle.LEFT | Rectangle.RIGHT);
         informacionEmpresa.setPaddingTop(35);
-        
+
         PdfPTable crearInfoEmpresaTable = new PdfPTable(1);
-        
+
         PdfPCell razonSocial = new PdfPCell();
         razonSocial.setBorder(0);
-        PdfPTable razonSocialTable = generarNegrita("Razon Social: ", informacion.getEmpresa().getRazonSocial(), 23, 77);
+        PdfPTable razonSocialTable = generarNegrita("Razón Social: ", informacion.getEmpresa().getRazonSocial(), 23, 77);
         razonSocial.addElement(razonSocialTable);
 
         PdfPCell domicCom = new PdfPCell();
         domicCom.setBorder(0);
         PdfPTable domicComTable = generarNegrita("Domicilio Comercial: ", informacion.getEmpresa().getDomicilioComercial(), 33, 67);
         domicCom.addElement(domicComTable);
-        
+
         PdfPCell condIva = new PdfPCell();
         condIva.setBorder(0);
         PdfPTable condIvaTable = generarNegrita("Condición frente al IVA: ", informacion.getEmpresa().getCondIva(), 38, 62);
         condIva.addElement(condIvaTable);
-        
+
         crearInfoEmpresaTable.setWidthPercentage(100);
         crearInfoEmpresaTable.addCell(razonSocial);
         crearInfoEmpresaTable.addCell(domicCom);
         crearInfoEmpresaTable.addCell(condIva);
-        
+
         informacionEmpresa.setPaddingLeft(4);
         informacionEmpresa.addElement(crearInfoEmpresaTable);
-        
+
         return informacionEmpresa;
     }
 
@@ -1022,7 +1069,7 @@ public class GeneracionPDF {
         informacionFactura.setBorder(Rectangle.BOTTOM | Rectangle.LEFT | Rectangle.RIGHT);
 
         PdfPTable informacionFacturaTable = new PdfPTable(1);
-        
+
         PdfPCell ptoVtaCompNro = new PdfPCell();
         ptoVtaCompNro.setPaddingLeft(30);
         ptoVtaCompNro.setBorder(0);
@@ -1030,15 +1077,15 @@ public class GeneracionPDF {
         ptoVta_NroComp.font().setSize(8);
         ptoVta_NroComp.font().setStyle(Font.BOLD);
         ptoVtaCompNro.addElement(ptoVta_NroComp);
-        
+
         PdfPCell fchEmision = new PdfPCell();
         fchEmision.setPaddingLeft(30);
         fchEmision.setBorder(0);
-        Phrase fechaEmision = new Phrase("Fecha de emision:  " + informacion.getFeDetReq().getCbteFch().substring(5, 7) + "/" + informacion.getFeDetReq().getCbteFch().substring(3, 5) + "/" + informacion.getFeDetReq().getCbteFch().substring(0, 4));
+        Phrase fechaEmision = new Phrase("Fecha de emisión:  " + informacion.getFeDetReq().getCbteFch().substring(5, 7) + "/" + informacion.getFeDetReq().getCbteFch().substring(3, 5) + "/" + informacion.getFeDetReq().getCbteFch().substring(0, 4));
         fechaEmision.font().setSize(8);
         fechaEmision.font().setStyle(Font.BOLD);
         fchEmision.addElement(fechaEmision);
-        
+
         String cuit = null;
         if (String.valueOf(informacion.getAuth().getCuit()).length() == 10) {
             cuit = String.valueOf(informacion.getAuth().getCuit()).substring(0, 2) + "-" + String.valueOf(informacion.getAuth().getCuit()).substring(2, 9) + "-" + String.valueOf(informacion.getAuth().getCuit()).charAt(9);
@@ -1051,39 +1098,39 @@ public class GeneracionPDF {
         cuitFactura.setBorder(0);
         PdfPTable cuitFacturaTable = generarNegrita("CUIT: ", cuit, 15, 85);
         cuitFactura.addElement(cuitFacturaTable);
-        
+
         PdfPCell ingBrutos = new PdfPCell();
         ingBrutos.setPaddingLeft(28);
         ingBrutos.setBorder(0);
         PdfPTable ingBrutosTable = generarNegrita("Ingresos Brutos: ", informacion.getEmpresa().getIngBrutos(), 30, 60);
         ingBrutos.addElement(ingBrutosTable);
-        
+
         PdfPCell fchInicioAct = new PdfPCell();
         fchInicioAct.setPaddingLeft(28);
         fchInicioAct.setBorder(0);
         PdfPTable fchInicioActTable = generarNegrita("Fecha de Inicio de Actividades: ", informacion.getEmpresa().getFchIniAct(), 55, 45);
         fchInicioAct.addElement(fchInicioActTable);
-        
+
         informacionFacturaTable.setWidthPercentage(100);
         informacionFacturaTable.addCell(ptoVtaCompNro);
         informacionFacturaTable.addCell(fchEmision);
         informacionFacturaTable.addCell(cuitFactura);
         informacionFacturaTable.addCell(ingBrutos);
         informacionFacturaTable.addCell(fchInicioAct);
-        
+
         informacionFactura.setPaddingLeft(10);
         informacionFactura.addElement(informacionFacturaTable);
-        
+
         return informacionFactura;
     }
 
-   private PdfPTable crearTablaInformacionB(Comprobante informacion) {
+    private PdfPTable crearTablaInformacionB(Comprobante informacion) {
         PdfPTable tablaInformacion = new PdfPTable(new float[]{8, 35, 8, 8, 15, 8, 10, 10});
         tablaInformacion.setWidthPercentage(100);
 
         // Creacion de la columna codigo
         PdfPCell codigo = new PdfPCell();
-        Phrase codigoText = new Phrase("Codigo");
+        Phrase codigoText = new Phrase("Código");
         codigoText.font().setSize(8);
         codigoText.font().setStyle(Font.BOLD);
         codigo.setHorizontalAlignment(1);
@@ -1387,7 +1434,6 @@ public class GeneracionPDF {
             infoPorcBonif.setBorder(0);
             tablaInformacion.addCell(infoPorcBonif);
 
-
             // Carga de la columna de subtotal
             PdfPCell infoSubtotal = new PdfPCell();
             Phrase infoSubtotalTxt = new Phrase(String.valueOf(detalleFactura.getSubtotal()));
@@ -1396,7 +1442,7 @@ public class GeneracionPDF {
             infoSubtotal.setHorizontalAlignment(1);
             infoSubtotal.setBorder(0);
             tablaInformacion.addCell(infoSubtotal);
-            
+
             // Carga de la columna de alicuota IVA
             PdfPCell infoAlicIva = new PdfPCell();
             Phrase infoAlicIVATxt = new Phrase(String.valueOf(detalleFactura.getAlicuotaIVA()));
@@ -1415,10 +1461,10 @@ public class GeneracionPDF {
             infoSubtotalCIVA.setBorder(0);
             tablaInformacion.addCell(infoSubtotalCIVA);
         }
-        
+
         return tablaInformacion;
     }
-    
+
     private PdfPTable crearFooter() {
         PdfPTable tablaFooter = new PdfPTable(new float[]{20, 22, 12, 46});
         tablaFooter.setWidthPercentage(100);
@@ -1440,7 +1486,7 @@ public class GeneracionPDF {
         cellQR2.setBorder(-1);
 
         // Aplicacion del numero de pagina
-        Phrase txtPagina = new Phrase("Pag 1/1");
+        Phrase txtPagina = new Phrase("Pág. 1/1");
         txtPagina.font().setSize(12);
         txtPagina.font().setStyle(Font.BOLD);
         PdfPCell cellQR3 = new PdfPCell(txtPagina);

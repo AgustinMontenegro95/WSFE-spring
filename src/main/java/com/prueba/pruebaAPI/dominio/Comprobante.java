@@ -12,11 +12,12 @@ public class Comprobante {
     private DetalleFactura[] detalleFactura;
     private boolean generarPdf;
     private FeDetReq feDetReq;
-
+    private PeriodoFacturado periodoFacturado;
+    
     public Comprobante() {
     }
 
-    public Comprobante(Auth auth, FeCabReq feCabReq, Empresa empresa, Cliente cliente, DetalleFactura[] detalleFactura, boolean generarPDF, FeDetReq feDetReq) {
+    public Comprobante(Auth auth, FeCabReq feCabReq, Empresa empresa, Cliente cliente, DetalleFactura[] detalleFactura, boolean generarPDF, FeDetReq feDetReq, PeriodoFacturado periodoFacturado) {
         this.auth = auth;
         this.feCabReq = feCabReq;
         this.empresa = empresa;
@@ -24,6 +25,7 @@ public class Comprobante {
         this.detalleFactura = detalleFactura;
         this.generarPdf = generarPDF;
         this.feDetReq = feDetReq;
+        this.periodoFacturado = periodoFacturado;
     }
 
     public Auth getAuth() {
@@ -92,5 +94,13 @@ public class Comprobante {
                "Sign: " + auth.getSign() + "\n" +
                "Cuit: " + auth.getCuit()+ "\n" +
                "tEnvio: " + auth.getTEnvio()+ "\n";
+    }
+
+    public PeriodoFacturado getPeriodoFacturado() {
+        return periodoFacturado;
+    }
+
+    public void setPeriodoFacturado(PeriodoFacturado periodoFacturado) {
+        this.periodoFacturado = periodoFacturado;
     }
 }
