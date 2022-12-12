@@ -68,16 +68,23 @@ public class WSFE {
                     //generar respuesta json
                     resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
                 } else {
-                    if (validacion.getError().size() > 1) {
-                        resultadoFinal = "{";
-                        for (int i = 0; i < validacion.getError().size() - 1; i++) {
-                            resultadoFinal += (validacion.getError().get(i) + ",");
-                            System.out.println(resultadoFinal);
+                    validacion.agregarError("\" Error \" : \"El CEE ya posee un Ticket de Acceso valido para el WS solicitado\"");
+                    if (validacion.getError().size() > 0) {
+                        if (validacion.getError().size() == 1) {
+                            resultadoFinal = "{ " + validacion.getError().get(0) + " }";
+                        } else {
+                            resultadoFinal = "{";
+                            for (int i = 0; i < validacion.getError().size() - 1; i++) {
+                                resultadoFinal += (validacion.getError().get(i) + ",");
+                                System.out.println(resultadoFinal);
+                            }
+                            resultadoFinal += validacion.getError().get(validacion.getError().size() - 1);
+                            resultadoFinal += "}";
                         }
-                        resultadoFinal += validacion.getError().get(validacion.getError().size() - 1);
-                        resultadoFinal += "}";
                     }
-                    resultadoFinal = validacion.getError().get(1);
+
+                    
+                    
                 }
             } else {
                 //verificar que tEnvio no esta caducado
@@ -118,7 +125,7 @@ public class WSFE {
                         resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
                         System.out.println("Tiempo incorrecto");
                     } else {
-                        if (validacion.getError().size() > 1) {
+                        if (validacion.getError().size() > 0) {
                             resultadoFinal = "{";
                             for (int i = 0; i < validacion.getError().size() - 1; i++) {
                                 resultadoFinal += (validacion.getError().get(i) + ",");
@@ -127,8 +134,6 @@ public class WSFE {
                             resultadoFinal += validacion.getError().get(validacion.getError().size() - 1);
                             resultadoFinal += "}";
                         }
-                        resultadoFinal = validacion.getError().get(0);
-
                     }
 
                 }

@@ -35,6 +35,10 @@ public class Validacion {
         
         return validado;
     }
+    
+    public void agregarError(String error){
+        errores.add(error);
+    }
 
     public boolean validarFecha(String fecha) {
         try {

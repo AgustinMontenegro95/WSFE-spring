@@ -332,7 +332,7 @@ public class GeneracionPDF {
         }
         try {
             multipartFile = new MockMultipartFile("prueba.pdf", new FileInputStream(new File("D:\\WSFE-spring\\temporal.pdf")));
-            String fileName = "recursos/FE/" + informacion.getEmpresa().getNombre() + "/" + informacion.getCliente().getDniCuit() + "/" + informacion.getFeCabReq().getPtoVta() + "-" + tipoFact + "-" + nroComprobante + ".pdf";
+            String fileName = "recursos/FE/" + informacion.getEmpresa().getNombre() + "/" + informacion.getCliente().getDniCuit() + "/" + tipoFact + "-" + informacion.getFeCabReq().getPtoVta() + "-" + nroComprobante + ".pdf";
 
             S3ManagerUtils s3ManagerUtils = new S3ManagerUtils();
             s3ManagerUtils.uploadMultipartFile(fileName, multipartFile.getInputStream(), multipartFile.getContentType(), true);
