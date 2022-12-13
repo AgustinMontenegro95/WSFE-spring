@@ -44,6 +44,8 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 public class RequestWSAA {
 
@@ -102,10 +104,10 @@ public class RequestWSAA {
         try {
             // Se crea el almacen para la Key y el Certificado de tipo PKCS12 (tipo que admite el tipo de certificado.pfx)
             KeyStore ks = KeyStore.getInstance("PKCS12");
-
+            
             // Se crea un InputStream para cargar el certificado junto con la clave en el almacen de key (ks) y luego se cierra el InputStream
             try {
-                InputStream hiloEntrada = new FileInputStream("D:\\WSFE-spring\\certs\\MiCertificado.pfx");
+                InputStream hiloEntrada = new ClassPathResource("certs/MiCertificado.pfx").getInputStream();
                 ks.load(hiloEntrada, "test".toCharArray());
                 hiloEntrada.close();
             } catch (IOException e) {

@@ -3,8 +3,8 @@ package com.prueba.pruebaAPI.funciones.WS;
 import com.prueba.pruebaAPI.dominio.Comprobante;
 import com.prueba.pruebaAPI.validacion.*;
 import com.prueba.pruebaAPI.funciones.WSAA.*;
-import com.prueba.pruebaAPI.funciones.WS.*;
 import com.prueba.pruebaAPI.funciones.generacionPDF.GeneracionPDF;
+import com.prueba.pruebaAPI.funciones.horarioServerAfip.HorarioAfip;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDateTime;
@@ -87,7 +87,7 @@ public class WSFE {
                 //verificar que tEnvio no esta caducado
                 LocalDateTime tEnvio = LocalDateTime.parse(informacion.getAuth().getTEnvio());
                 LocalDateTime dateTime = LocalDateTime.now();
-                if (dateTime.isBefore(tEnvio)) {
+                if (dateTime.plusHours(2).isBefore(tEnvio)) {
                     responseFeCAESolicitar = feCAE.callSoapWebService(informacion);
                     System.out.println("Tiempo correcto");
                     System.out.println("Solicita PDF: " + informacion.getGenerarPdf());

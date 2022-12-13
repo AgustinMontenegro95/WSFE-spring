@@ -25,7 +25,7 @@ public class ComprobanteController {
     public ComprobanteController() {
         this.comprobanteService = new ComprobanteService();
     }
-
+    
     @GetMapping("/getCAE")
     public ResponseEntity<?> obtenerCae(@RequestBody Comprobante comprobante) {
         Map<String, Object> responseBody = new HashMap<>();
@@ -38,13 +38,8 @@ public class ComprobanteController {
 
                 if (nodoRespuesta.has("FeCAESolicitar")) {
                     responseBody.put("Resultado", nodoRespuesta.get("FeCAESolicitar").get("Resultado").asText());
-                    responseBody.put("FchProceso", nodoRespuesta.get("FeCAESolicitar").get("FchProceso").asText());
-                    responseBody.put("Obs-Code", nodoRespuesta.get("FeCAESolicitar").get("Obs-Code").asText());
-                    responseBody.put("Obs-Msg", nodoRespuesta.get("FeCAESolicitar").get("Obs-Msg").asText());
-                    responseBody.put("CAE", nodoRespuesta.get("FeCAESolicitar").get("CAE").asText());
-                    responseBody.put("CAEFchVto", nodoRespuesta.get("FeCAESolicitar").get("CAEFchVto").asText());
                     responseBody.put("UrlPublica", nodoRespuesta.get("UrlPublica"));
-                    responseBody.put("Log Consulta", comprobante);
+                    responseBody.put("Log Consulta", comprobante.getAuth());
                     responseBody.put("Log Respuesta", nodoRespuesta.get("Log"));
                     if (nodoRespuesta.has("Actualizacion")) {
                         responseBody.put("Token", nodoRespuesta.get("Actualizacion").get("Token").asText());

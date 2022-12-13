@@ -10,9 +10,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +31,6 @@ public class GeneracionPDF {
 
         Document document = new Document(PageSize.A4, 20, 20, 25, 20);
         try {
-
             try {
                 //colocar nombre de acuerdo a los datos
                 PdfWriter.getInstance(document, new FileOutputStream("temporal.pdf"));
@@ -379,7 +380,8 @@ public class GeneracionPDF {
             tipoFact = "B";
         }
         try {
-            multipartFile = new MockMultipartFile("prueba.pdf", new FileInputStream(new File("D:\\WSFE-spring\\temporal.pdf")));
+            
+            multipartFile = new MockMultipartFile("prueba.pdf", new FileInputStream(new File("temporal.pdf")));
             String fileName = "recursos/FE/" + informacion.getEmpresa().getNombre() + "/" + informacion.getCliente().getDniCuit() + "/" + tipoFact + "-" + informacion.getFeCabReq().getPtoVta() + "-" + nroComprobante + ".pdf";
 
             S3ManagerUtils s3ManagerUtils = new S3ManagerUtils();
@@ -1473,7 +1475,8 @@ public class GeneracionPDF {
         PdfPCell cellQR1 = new PdfPCell();
         Image imagenQR = null;
         try {
-            imagenQR = Image.getInstance("D:\\WSFE-spring\\images\\logoQR.png");
+            InputStream archivo = new ClassPathResource("images/logoQR.png").getInputStream();
+            imagenQR = Image.getInstance(archivo.readAllBytes());
             cellQR1.setImage(imagenQR);
             cellQR1.setBorder(-1);
         } catch (BadElementException | IOException ex) {
@@ -1512,7 +1515,8 @@ public class GeneracionPDF {
         PdfPCell cellQR2 = new PdfPCell();
         Image imagenLogo = null;
         try {
-            imagenLogo = Image.getInstance("D:\\WSFE-spring\\images\\logo_afip.jpg");
+            InputStream archivo = new ClassPathResource("images/logo_afip.jpg").getInputStream();
+            imagenLogo = Image.getInstance(archivo.readAllBytes());
             imagenLogo.setWidthPercentage(70);
             cellQR2.setImage(imagenLogo);
             cellQR2.setBorder(-1);
