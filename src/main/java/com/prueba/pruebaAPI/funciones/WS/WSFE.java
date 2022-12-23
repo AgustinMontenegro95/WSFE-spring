@@ -7,33 +7,35 @@ import com.prueba.pruebaAPI.funciones.generacionPDF.GeneracionPDF;
 import com.prueba.pruebaAPI.funciones.horarioServerAfip.HorarioAfip;
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
 import org.json.XML;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class WSFE {
 
     private String resultadoFinal;
-
-    @Autowired
-    GeneracionPDF generacionPDF;
 
     public WSFE() {
         this.resultadoFinal = "";
     }
 
     public synchronized String conexion(Comprobante informacion) {
+        
+        // Objetos
         Validacion validacion = new Validacion(informacion);
         FECAESolicitar feCAE = new FECAESolicitar();
         ConnectAndResponseWSAA con = new ConnectAndResponseWSAA();
         String[] resWSAA = null;
-        String[] responseFeCAESolicitar;
+        String[] responseFeCAESolicitar = null;
         GeneracionPDF generacionPDF = new GeneracionPDF();
         String urlPublica = "";
 
+        // Validacion de campos
         boolean resValidacion = false;
         try {
             resValidacion = validacion.validar();
@@ -41,33 +43,45 @@ public class WSFE {
             Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        // Si supera la validacion
         if (resValidacion) {
-            System.out.println("validacion true");
-            //verificar token and sign
+            
+            // Verificar que el campo de token y firma no esten vacios, en caso de estar vacios
             if (informacion.getAuth().getToken().isEmpty() || informacion.getAuth().getSign().isEmpty()) {
-                System.out.println("Token y sign vacios");
-                //llamar al wsaa
+                
+                // Llamar al WSAA para obtener un nuevo token y firma
                 resWSAA = con.obtenerRespuesta();
+                
+                // Si contesta de manera exitosa
                 if (resWSAA != null) {
-                    //resWSAA[3] exptime tiene diferente formato -> 2002­01­01T00:00:02­03:00
-                    //armar json response (agregar token, sign y exptime)
+                    
+                    // Asigna los nuevos valores al comprobante y llama al WS 
                     informacion.getAuth().setToken(resWSAA[0]);
-                    System.out.println("getToken: " + informacion.getAuth().getToken());
                     informacion.getAuth().setSign(resWSAA[1]);
-                    System.out.println("getSign: " + informacion.getAuth().getSign());
                     responseFeCAESolicitar = feCAE.callSoapWebService(informacion);
+                    
+                    // Verifica si desea generar y almacenar la factura en el servidor
                     if (informacion.getGenerarPdf()) {
-                        try {
-                            generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
-                            //generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
-                            urlPublica = generacionPDF.getUrlPublica();
-                        } catch (IOException ex) {
-                            Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);
+                        
+                        if(responseFeCAESolicitar[5] != null && !responseFeCAESolicitar[5].isBlank()){
+                            try {
+                                generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
+                                urlPublica = generacionPDF.getUrlPublica();
+                            } catch (IOException ex) {
+                                Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
                     }
-                    //generar respuesta json
+                    
+                    // Genera el json de respuesta
                     resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
+                    
                 } else {
+                    
+                    /*
+                        Validacion de fecha de generacion pendiente...
+                    */
+                    
                     validacion.agregarError("\" Error \" : \"El CEE ya posee un Ticket de Acceso valido para el WS solicitado\"");
                     if (validacion.getError().size() > 0) {
                         if (validacion.getError().size() == 1) {
@@ -83,45 +97,70 @@ public class WSFE {
                         }
                     }
                 }
-            } else {
-                //verificar que tEnvio no esta caducado
+                
+                
+            } else {    // En caso de que los campos esten cargados, se verifica el tiempo de envio
+                
+                // Verifica que tEnvio no esta caducado
                 LocalDateTime tEnvio = LocalDateTime.parse(informacion.getAuth().getTEnvio());
                 LocalDateTime dateTime = LocalDateTime.now();
-                if (dateTime.plusHours(2).isBefore(tEnvio)) {
+                System.out.println("Fecha y hora del servidor: " + dateTime);
+                if (dateTime.minusHours(3).isBefore(tEnvio)) {
+                    
+                    // Si el tiempo de envio es correcto, llama al WS
                     responseFeCAESolicitar = feCAE.callSoapWebService(informacion);
-                    System.out.println("Tiempo correcto");
-                    System.out.println("Solicita PDF: " + informacion.getGenerarPdf());
+
+                    // Verifica si desea generar y almacenar la factura en el servidor
                     if (informacion.getGenerarPdf()) {
-                        try {
-                            generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
-                            urlPublica = generacionPDF.getUrlPublica();
-                        } catch (IOException ex) {
-                            Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                    resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
-                } else {
-                    //llamar al wsaa
-                    resWSAA = con.obtenerRespuesta();
-                    if (resWSAA != null) {
-                        //resWSAA[3] exptime tiene diferente formato
-                        //armar json response (agregar token, sign y exptime)
-                        informacion.getAuth().setToken(resWSAA[0]);
-                        informacion.getAuth().setSign(resWSAA[1]);
-                        responseFeCAESolicitar = feCAE.callSoapWebService(informacion);
-                        System.out.println("Solicita PDF: " + informacion.getGenerarPdf());
-                        if (informacion.getGenerarPdf()) {
+                        
+                        if(responseFeCAESolicitar[5] != null && !responseFeCAESolicitar[5].isBlank()){
                             try {
                                 generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
                                 urlPublica = generacionPDF.getUrlPublica();
                             } catch (IOException ex) {
-                                Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);
+                                 Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
-                        //generar respuesta json
+                    }
+                    
+                    // Genera el json de respuesta
+                    resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
+                    
+                } else {    // Si la fecha de envio es incorrecta
+                    
+                    // Llamar al WSAA para obtener un nuevo token y firma
+                    resWSAA = con.obtenerRespuesta();
+                    
+                    // Si contesta de manera exitosa
+                    if (resWSAA != null) {
+                        
+                        // Asigna los nuevos valores al comprobante y llama al WS 
+                        informacion.getAuth().setToken(resWSAA[0]);
+                        informacion.getAuth().setSign(resWSAA[1]);
+                        responseFeCAESolicitar = feCAE.callSoapWebService(informacion);
+                        
+                        // Verifica si desea generar y almacenar la factura en el servidor
+                        if (informacion.getGenerarPdf()) {
+                            
+                            if(responseFeCAESolicitar[5] != null && !responseFeCAESolicitar[5].isBlank()){
+                                try {
+                                    generacionPDF.generarPDF(informacion, responseFeCAESolicitar);
+                                    urlPublica = generacionPDF.getUrlPublica();
+                                } catch (IOException ex) {
+                                    Logger.getLogger(WSFE.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }
+                        
+                        // Genera el json de respuesta
                         resultadoFinal = generarJSONRespuesta(responseFeCAESolicitar, resWSAA, urlPublica);
-                        System.out.println("Tiempo incorrecto");
+                        
                     } else {
+                        
+                        /*
+                            Validacion de fecha de generacion pendiente...
+                        */
+                        
                         validacion.agregarError("\" Error \" : \"El CEE ya posee un Ticket de Acceso valido para el WS solicitado\"");
                         if (validacion.getError().size() > 0) {
                             if (validacion.getError().size() == 1) {
@@ -141,6 +180,11 @@ public class WSFE {
                 }
             }
         } else {
+            
+            /*
+                Validacion de fecha de generacion pendiente...
+            */
+            
             if (validacion.getError().size() > 0) {
                 resultadoFinal = "{";
                 for (int i = 0; i < validacion.getError().size() - 1; i++) {
@@ -159,13 +203,7 @@ public class WSFE {
         JSONObject xmlJSONObj = XML.toJSONObject(responseFeCAESolicitar[0]);
         String log = xmlJSONObj.toString(PRETTY_PRINT_INDENT_FACTOR);
 
-        String result = "{\"FeCAESolicitar\": {"
-                + "\"Resultado\":\"" + responseFeCAESolicitar[1] + "\","
-                + "\"FchProceso\":\"" + responseFeCAESolicitar[2] + "\","
-                + "\"Obs-Code\":\"" + responseFeCAESolicitar[3] + "\","
-                + "\"Obs-Msg\":\"" + responseFeCAESolicitar[4] + "\","
-                + "\"CAE\":\"" + responseFeCAESolicitar[5] + "\","
-                + "\"CAEFchVto\":\"" + responseFeCAESolicitar[6] + "\"},"
+        String result = "{"
                 + "\"UrlPublica\":\"" + urlPublica + "\","
                 + "\"Log\":" + log + "";
         if (resWSAA != null) {
@@ -176,7 +214,7 @@ public class WSFE {
                         + "\"FchVto\":\"" + resWSAA[2] + "\"}}";
             }
         } else {
-            result += "}";
+            result = result + '}';
         }
         System.out.println("" + result);
         return result;

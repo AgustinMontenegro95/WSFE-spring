@@ -16,7 +16,5 @@ public class AmazonConfig {
         return AmazonS3ClientBuilder.standard()
                     .withRegion(Regions.US_EAST_1)
                     .build();
-//        return AmazonS3ClientBuilder.standard()
-//                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("https://s3-website-us-east-1.amazonaws.com", "us-east-1")).build();
     }
 }
