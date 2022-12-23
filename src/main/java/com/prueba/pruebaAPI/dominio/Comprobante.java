@@ -13,11 +13,14 @@ public class Comprobante {
     private boolean generarPdf;
     private FeDetReq feDetReq;
     private PeriodoFacturado periodoFacturado;
+    private String cbuEmisor;
     
     public Comprobante() {
     }
 
-    public Comprobante(Auth auth, FeCabReq feCabReq, Empresa empresa, Cliente cliente, DetalleFactura[] detalleFactura, boolean generarPDF, FeDetReq feDetReq, PeriodoFacturado periodoFacturado) {
+    public Comprobante(Auth auth, FeCabReq feCabReq, Empresa empresa, Cliente cliente, 
+            DetalleFactura[] detalleFactura, boolean generarPDF, FeDetReq feDetReq, 
+            PeriodoFacturado periodoFacturado, String cbuEmisor) {
         this.auth = auth;
         this.feCabReq = feCabReq;
         this.empresa = empresa;
@@ -26,6 +29,7 @@ public class Comprobante {
         this.generarPdf = generarPDF;
         this.feDetReq = feDetReq;
         this.periodoFacturado = periodoFacturado;
+        this.cbuEmisor = cbuEmisor;
     }
 
     public Auth getAuth() {
@@ -102,5 +106,13 @@ public class Comprobante {
 
     public void setPeriodoFacturado(PeriodoFacturado periodoFacturado) {
         this.periodoFacturado = periodoFacturado;
+    }
+
+    public String getCbuEmisor() {
+        return cbuEmisor;
+    }
+
+    public void setCbuEmisor(String cbuEmisor) {
+        this.cbuEmisor = cbuEmisor;
     }
 }

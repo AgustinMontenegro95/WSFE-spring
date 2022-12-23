@@ -21,11 +21,15 @@ public class FeDetReq {
     private Tributo[] tributos;
     private Iva[] iva;
     private Comprador[] compradores;
+    private String fchVtoPago;
 
     public FeDetReq() {
     }
 
-    public FeDetReq(long concepto, long docTipo, long docNro, String cbteFch, double impTotal, double impTotConc, double impNeto, double impOpEx, double impTrib, double impIVA, String monID, long monCotiz, CbtesAsoc[] cbtesAsoc, Tributo[] tributos, Iva[] iva, Comprador[] compradores) {
+    public FeDetReq(long concepto, long docTipo, long docNro, String cbteFch, double impTotal, 
+            double impTotConc, double impNeto, double impOpEx, double impTrib, double impIVA, 
+            String monID, long monCotiz, CbtesAsoc[] cbtesAsoc, Tributo[] tributos, Iva[] iva, 
+            Comprador[] compradores, String fchVtoPago) {
         this.concepto = concepto;
         this.docTipo = docTipo;
         this.docNro = docNro;
@@ -42,6 +46,7 @@ public class FeDetReq {
         this.tributos = tributos;
         this.iva = iva;
         this.compradores = compradores;
+        this.fchVtoPago = fchVtoPago;
     }
 
     public long getConcepto() {
@@ -170,6 +175,14 @@ public class FeDetReq {
 
     public void setCompradores(Comprador[] value) {
         this.compradores = value;
+    }
+
+    public String getFchVtoPago() {
+        return fchVtoPago;
+    }
+
+    public void setFchVtoPago(String fchVtoPago) {
+        this.fchVtoPago = fchVtoPago;
     }
 
 }

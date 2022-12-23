@@ -142,6 +142,10 @@ public class FECAESolicitar {
         // Mon Cotiz
         SOAPElement det_monCotiz = feCaeDetRequest.addChildElement("MonCotiz", myNamespace);
         det_monCotiz.setTextContent("" + informacion.getFeDetReq().getMonCotiz());
+        
+        // FchVtoPago
+        SOAPElement det_fchVtoPago = feCaeDetRequest.addChildElement("FchVtoPago", myNamespace);
+        det_fchVtoPago.setTextContent("" + informacion.getFeDetReq().getFchVtoPago());
 
         //Verificacion de los comprobantes asociados
         if (informacion.getFeDetReq().getCbtesAsoc() != null) {
@@ -179,6 +183,10 @@ public class FECAESolicitar {
                     // Id
                     SOAPElement trib_id = trib.addChildElement("Id", myNamespace);
                     trib_id.setTextContent("" + tributo.getID());
+                    
+                    // Desc
+                    SOAPElement trib_desc = trib.addChildElement("Desc", myNamespace);
+                    trib_desc.setTextContent("" + tributo.getDesc());
 
                     // Base Imp
                     SOAPElement trib_baseImp = trib.addChildElement("BaseImp", myNamespace);

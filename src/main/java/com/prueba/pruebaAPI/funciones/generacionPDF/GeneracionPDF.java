@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
@@ -57,11 +56,33 @@ public class GeneracionPDF {
                 document.add(saltoLinea(1));
             }
 
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                if (informacion.getCbuEmisor() != null) {
+                    document.add(generarCBUEmisor(informacion));
+                    document.add(saltoLinea(1));
+                }
+            }
+
             document.add(generarInformacionCliente1(informacion));
             document.add(generarInformacionCliente2(informacion));
-            document.add(generarInformacionCliente3());
+
+            if (informacion.getFeCabReq().getCbteTipo() == 3
+                    || informacion.getFeCabReq().getCbteTipo() == 8
+                    || informacion.getFeCabReq().getCbteTipo() == 203
+                    || informacion.getFeCabReq().getCbteTipo() == 208) {
+                document.add(generarInformacionCliente3(informacion));
+            } else {
+                document.add(generarInformacionCliente3());
+            }
 
             document.add(saltoLinea(1));
+
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                document.add(generarOpcionTransferencia());
+                document.add(saltoLinea(1));
+            }
 
             if (informacion.getFacturaDetalleAlicIVA(0) == 0) {
                 document.add(crearTablaInformacionB(informacion));
@@ -163,6 +184,12 @@ public class GeneracionPDF {
                 document.add(generarImportesIva9(informacion));
             }
 
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                document.add(saltoLinea(1));
+                document.add(generarOpcionTransferenciaLeyenda());
+            }
+
             document.add(saltoLinea(2));
 
             document.add(crearFooter());
@@ -182,7 +209,7 @@ public class GeneracionPDF {
             document.add(contenedor_Info);
 
             document.add(saltoLinea(1));
-            
+
             if (informacion.getPeriodoFacturado() != null) {
                 document.add(periodoFacturado(informacion));
                 document.add(saltoLinea(1));
@@ -260,7 +287,7 @@ public class GeneracionPDF {
             document.add(contenedor_Info);
 
             document.add(saltoLinea(1));
-            
+
             if (informacion.getPeriodoFacturado() != null) {
                 document.add(periodoFacturado(informacion));
                 document.add(saltoLinea(1));
@@ -380,7 +407,7 @@ public class GeneracionPDF {
             tipoFact = "B";
         }
         try {
-            
+
             multipartFile = new MockMultipartFile("prueba.pdf", new FileInputStream(new File("temporal.pdf")));
             String fileName = "recursos/FE/" + informacion.getEmpresa().getNombre() + "/" + informacion.getCliente().getDniCuit() + "/" + tipoFact + "-" + informacion.getFeCabReq().getPtoVta() + "-" + nroComprobante + ".pdf";
 
@@ -551,12 +578,10 @@ public class GeneracionPDF {
         domicilio.setBorderWidthRight(1);
         domicilio.setPaddingTop(5);
         domicilio.setPaddingBottom(5);
-
         if (informacion.getCliente().getDniCuit().length() == 7 || informacion.getCliente().getDniCuit().length() == 8) {
             PdfPTable domicilioTable = generarNegrita("Domicilio:", informacion.getCliente().getDomicilio(), 20, 80);
             domicilio.addElement(domicilioTable);
         }
-
         if (informacion.getCliente().getDniCuit().length() == 10 || informacion.getCliente().getDniCuit().length() == 11) {
             PdfPTable domicilioTable = generarNegrita("Domicilio Comercial:", informacion.getCliente().getDomicilio(), 20, 80);
             domicilio.addElement(domicilioTable);
@@ -587,6 +612,131 @@ public class GeneracionPDF {
         cliente3.addCell(condVenta);
 
         return cliente3;
+    }
+
+    private PdfPTable generarInformacionCliente3(Comprobante informacion) throws DocumentException {
+        PdfPTable cliente3 = new PdfPTable(2);
+
+        PdfPCell condVenta = new PdfPCell();
+        condVenta.setBorder(0);
+        condVenta.setBorderWidthLeft(1);
+        condVenta.setBorderWidthBottom(1);
+        condVenta.setPaddingLeft(5);
+        condVenta.setPaddingBottom(10);
+        PdfPTable condVentaTable = generarNegrita("Condición de Venta:", "Otra", 35, 65);
+        condVenta.addElement(condVentaTable);
+
+        PdfPCell electronicaMiPyMEs = new PdfPCell();
+        electronicaMiPyMEs.setBorder(0);
+        electronicaMiPyMEs.setBorderWidthRight(1);
+        electronicaMiPyMEs.setBorderWidthBottom(1);
+        electronicaMiPyMEs.setPaddingLeft(5);
+        electronicaMiPyMEs.setPaddingBottom(10);
+
+        if (informacion.getFeCabReq().getCbteTipo() == 3) {
+            PdfPTable electronicaMiPyMEsTable = generarNegrita("Fac. A:",
+                    String.format("%0" + 5 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getPtoVta())
+                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getTipo()), 17, 83);
+            electronicaMiPyMEs.addElement(electronicaMiPyMEsTable);
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 8) {
+            PdfPTable electronicaMiPyMEsTable = generarNegrita("Fac. B:", String.format("%0" + 5 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getPtoVta())
+                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getTipo()), 17, 83);
+            electronicaMiPyMEs.addElement(electronicaMiPyMEsTable);
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 203) {
+            PdfPTable electronicaMiPyMEsTable = generarNegrita("Factura de cré (FCE) A:", String.format("%0" + 5 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getPtoVta())
+                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getTipo()), 17, 83);
+            electronicaMiPyMEs.addElement(electronicaMiPyMEsTable);
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 208) {
+            PdfPTable electronicaMiPyMEsTable = generarNegrita("Factura de cré (FCE) B:", String.format("%0" + 5 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getPtoVta())
+                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getTipo()), 17, 83);
+            electronicaMiPyMEs.addElement(electronicaMiPyMEsTable);
+        }
+
+        cliente3.setWidthPercentage(100);
+        cliente3.setWidths(new float[]{50, 50});
+        cliente3.addCell(condVenta);
+        cliente3.addCell(electronicaMiPyMEs);
+
+        return cliente3;
+    }
+
+    private PdfPTable generarCBUEmisor(Comprobante informacion) throws DocumentException {
+        PdfPTable cbuEmisor = new PdfPTable(1);
+
+        PdfPCell cbuEmisorCell = new PdfPCell();
+        cbuEmisorCell.setBorder(0);
+        cbuEmisorCell.setBorderWidthTop(1);
+        cbuEmisorCell.setBorderWidthRight(1);
+        cbuEmisorCell.setBorderWidthLeft(1);
+        cbuEmisorCell.setBorderWidthBottom(1);
+        cbuEmisorCell.setPaddingLeft(200);
+        PdfPTable cbuEmisorTable = generarNegrita("CBU del Emisor:", informacion.getCbuEmisor(), 20, 80);
+        cbuEmisorCell.addElement(cbuEmisorTable);
+
+        cbuEmisor.setWidthPercentage(100);
+        cbuEmisor.addCell(cbuEmisorCell);
+
+        return cbuEmisor;
+    }
+
+    private PdfPTable generarOpcionTransferencia() throws DocumentException {
+        PdfPTable opcionTransferencia = new PdfPTable(1);
+
+        PdfPCell opcionTransferenciaCell = new PdfPCell();
+        opcionTransferenciaCell.setBorder(0);
+        opcionTransferenciaCell.setBorderWidthTop(1);
+        opcionTransferenciaCell.setBorderWidthRight(1);
+        opcionTransferenciaCell.setBorderWidthLeft(1);
+        opcionTransferenciaCell.setBorderWidthBottom(1);
+        opcionTransferenciaCell.setPaddingLeft(5);
+        PdfPTable opcionTransferenciaCellTable = generarNegrita("Opcion de Transferencia:", "Sistema de Circulación Abierta", 20, 80);
+        opcionTransferenciaCell.addElement(opcionTransferenciaCellTable);
+
+        opcionTransferencia.setWidthPercentage(100);
+        opcionTransferencia.addCell(opcionTransferenciaCell);
+
+        return opcionTransferencia;
+    }
+
+    private PdfPTable generarOpcionTransferenciaLeyenda() throws DocumentException {
+        PdfPTable opcionTransferencia = new PdfPTable(1);
+
+        PdfPCell opcionTransferenciaCell = new PdfPCell();
+        opcionTransferenciaCell.setBorder(0);
+        opcionTransferenciaCell.setBorderColor(Color.red.darker());
+        opcionTransferenciaCell.setBorderColorBottom(Color.red.darker());
+        opcionTransferenciaCell.setBorderColorTop(Color.red.darker());
+        opcionTransferenciaCell.setBorderColorRight(Color.red.darker());
+        opcionTransferenciaCell.setBorderColorLeft(Color.red.darker());
+        opcionTransferenciaCell.setBorderWidthTop(1);
+        opcionTransferenciaCell.setBorderWidthRight(1);
+        opcionTransferenciaCell.setBorderWidthLeft(1);
+        opcionTransferenciaCell.setBorderWidthBottom(1);
+        opcionTransferenciaCell.setPadding(5);
+        opcionTransferenciaCell.setPaddingBottom(10);
+        Phrase optTransf = new Phrase("Luego de su aceptación tácita o expresa, "
+                + "esta Factura de Crédito Electrónica MiPyMEs será transmitida a "
+                + "El Sistema de Circulación Abierta de Facturas de Crédito Electrónicas "
+                + "MiPyMEs, para su circulación y negociación, incluso en los Mercados de Valores,"
+                + "en este caso, a través de un Agente de Depósito Colectivo o agentes "
+                + "que cumplan similares funciones.");
+        optTransf.font().setSize(6);
+        optTransf.font().setStyle(Font.ITALIC);
+        //optTransf.font().setStyle(Font.BOLD);
+        optTransf.font().setColor(Color.red.darker());
+
+        opcionTransferenciaCell.addElement(optTransf);
+
+        opcionTransferencia.setWidthPercentage(100);
+        opcionTransferencia.addCell(opcionTransferenciaCell);
+
+        return opcionTransferencia;
     }
 
     private PdfPTable generarImportesIva0(Comprobante informacion) throws DocumentException {
@@ -955,12 +1105,24 @@ public class GeneracionPDF {
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 2 || informacion.getFeCabReq().getCbteTipo() == 7) {
-            nombreFactura = new Phrase("NOTA DE DEBIDO");
+            nombreFactura = new Phrase("NOTA DE DÉBIDO");
 
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 3 || informacion.getFeCabReq().getCbteTipo() == 8) {
-            nombreFactura = new Phrase("NOTA DE CREDITO");
+            nombreFactura = new Phrase("NOTA DE CRÉDITO");
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 201 || informacion.getFeCabReq().getCbteTipo() == 206) {
+            nombreFactura = new Phrase("FACTURA DE CRÉDITO ELECTRÓNICA MiPyME (FCE)");
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 202 || informacion.getFeCabReq().getCbteTipo() == 207) {
+            nombreFactura = new Phrase("NOTA DE DÉBITO ELECTRÓNICA MiPyME (FCE)");
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 203 || informacion.getFeCabReq().getCbteTipo() == 208) {
+            nombreFactura = new Phrase("NOTA DE CRÉDITO ELECTRÓNICA MIPYMES (FCE)");
         }
 
         nombreFactura.font().setStyle(Font.BOLD);
@@ -986,32 +1148,63 @@ public class GeneracionPDF {
 
         if (informacion.getFeCabReq().getCbteTipo() == 1) {
             codigoCategoria = new Phrase("A");
-            nombreCategoria = new Phrase("COD. 001");
+            nombreCategoria = new Phrase("CÓD. 001");
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 2) {
             codigoCategoria = new Phrase("A");
-            nombreCategoria = new Phrase("COD. 002");
+            nombreCategoria = new Phrase("CÓD. 002");
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 3) {
             codigoCategoria = new Phrase("A");
-            nombreCategoria = new Phrase("COD. 003");
+            nombreCategoria = new Phrase("CÓD. 003");
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 6) {
             codigoCategoria = new Phrase("B");
-            nombreCategoria = new Phrase("COD. 006");
+            nombreCategoria = new Phrase("CÓD. 006");
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 7) {
             codigoCategoria = new Phrase("B");
-            nombreCategoria = new Phrase("COD. 007");
+            nombreCategoria = new Phrase("CÓD. 007");
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 8) {
             codigoCategoria = new Phrase("B");
-            nombreCategoria = new Phrase("COD. 008");
+            nombreCategoria = new Phrase("CÓD. 008");
+        }
+
+        // ELECTRÓNICA MiPyME (FCE) 
+        if (informacion.getFeCabReq().getCbteTipo() == 201) {
+            codigoCategoria = new Phrase("A");
+            nombreCategoria = new Phrase("CÓD. 201");
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 202) {
+            codigoCategoria = new Phrase("A");
+            nombreCategoria = new Phrase("CÓD. 202");
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 203) {
+            codigoCategoria = new Phrase("A");
+            nombreCategoria = new Phrase("CÓD. 203");
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 206) {
+            codigoCategoria = new Phrase("B");
+            nombreCategoria = new Phrase("CÓD. 206");
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 207) {
+            codigoCategoria = new Phrase("B");
+            nombreCategoria = new Phrase("CÓD. 207");
+        }
+
+        if (informacion.getFeCabReq().getCbteTipo() == 208) {
+            codigoCategoria = new Phrase("B");
+            nombreCategoria = new Phrase("CÓD. 208");
         }
 
         codigoCategoria.font().setStyle(Font.BOLD);

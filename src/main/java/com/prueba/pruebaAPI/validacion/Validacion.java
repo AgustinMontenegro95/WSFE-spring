@@ -87,8 +87,8 @@ public class Validacion {
             result = false;
         }
 
-        if (informacion.getFeCabReq().getCbteTipo() < 1 || informacion.getFeCabReq().getCbteTipo() > 10) {
-            errores.add("\"FeCabReq-CbteTipo\": \"El tipo de comprobante debe tener un valor comprendido entre 1 y 10\"");
+        if (informacion.getFeCabReq().getCbteTipo() <1 || informacion.getFeCabReq().getCbteTipo() >208){
+            errores.add("\"FeCabReq-CbteTipo\": \"El tipo de comprobante debe tener un valor comprendido entre 1-8, 201-203 o 206-208\"");
             result = false;
         }
 
