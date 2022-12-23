@@ -192,7 +192,7 @@ public class GeneracionPDF {
 
             document.add(saltoLinea(2));
 
-            document.add(crearFooter());
+            document.add(crearFooter(informacionCAE));
 
             //document.add(saltoLinea(2));
             document.newPage();
@@ -215,11 +215,33 @@ public class GeneracionPDF {
                 document.add(saltoLinea(1));
             }
 
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                if (informacion.getCbuEmisor() != null) {
+                    document.add(generarCBUEmisor(informacion));
+                    document.add(saltoLinea(1));
+                }
+            }
+
             document.add(generarInformacionCliente1(informacion));
             document.add(generarInformacionCliente2(informacion));
-            document.add(generarInformacionCliente3());
+
+            if (informacion.getFeCabReq().getCbteTipo() == 3
+                    || informacion.getFeCabReq().getCbteTipo() == 8
+                    || informacion.getFeCabReq().getCbteTipo() == 203
+                    || informacion.getFeCabReq().getCbteTipo() == 208) {
+                document.add(generarInformacionCliente3(informacion));
+            } else {
+                document.add(generarInformacionCliente3());
+            }
 
             document.add(saltoLinea(1));
+
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                document.add(generarOpcionTransferencia());
+                document.add(saltoLinea(1));
+            }
 
             if (informacion.getFacturaDetalleAlicIVA(0) == 0) {
                 document.add(crearTablaInformacionB(informacion));
@@ -268,9 +290,15 @@ public class GeneracionPDF {
                 document.add(generarImportesIva9(informacion));
             }
 
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                document.add(saltoLinea(1));
+                document.add(generarOpcionTransferenciaLeyenda());
+            }
+
             document.add(saltoLinea(2));
 
-            document.add(crearFooter());
+            document.add(crearFooter(informacionCAE));
 
             //document.add(saltoLinea(2));
             document.newPage();
@@ -293,11 +321,33 @@ public class GeneracionPDF {
                 document.add(saltoLinea(1));
             }
 
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                if (informacion.getCbuEmisor() != null) {
+                    document.add(generarCBUEmisor(informacion));
+                    document.add(saltoLinea(1));
+                }
+            }
+
             document.add(generarInformacionCliente1(informacion));
             document.add(generarInformacionCliente2(informacion));
-            document.add(generarInformacionCliente3());
+
+            if (informacion.getFeCabReq().getCbteTipo() == 3
+                    || informacion.getFeCabReq().getCbteTipo() == 8
+                    || informacion.getFeCabReq().getCbteTipo() == 203
+                    || informacion.getFeCabReq().getCbteTipo() == 208) {
+                document.add(generarInformacionCliente3(informacion));
+            } else {
+                document.add(generarInformacionCliente3());
+            }
 
             document.add(saltoLinea(1));
+
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                document.add(generarOpcionTransferencia());
+                document.add(saltoLinea(1));
+            }
 
             if (informacion.getFacturaDetalleAlicIVA(0) == 0) {
                 document.add(crearTablaInformacionB(informacion));
@@ -346,9 +396,15 @@ public class GeneracionPDF {
                 document.add(generarImportesIva9(informacion));
             }
 
+            if (informacion.getFeCabReq().getCbteTipo() == 201
+                    || informacion.getFeCabReq().getCbteTipo() == 206) {
+                document.add(saltoLinea(1));
+                document.add(generarOpcionTransferenciaLeyenda());
+            }
+
             document.add(saltoLinea(2));
 
-            document.add(crearFooter());
+            document.add(crearFooter(informacionCAE));
 
             document.close();
         } catch (DocumentException ex) {
@@ -401,11 +457,46 @@ public class GeneracionPDF {
     public void subirPDFServidorAWSs3(Comprobante informacion, String nroComprobante) {
         MultipartFile multipartFile = null;
         String tipoFact = "";
-        if (informacion.getFeCabReq().getCbteTipo() == 1 | informacion.getFeCabReq().getCbteTipo() == 2 | informacion.getFeCabReq().getCbteTipo() == 3) {
-            tipoFact = "A";
-        } else {
-            tipoFact = "B";
+
+        switch ((int) informacion.getFeCabReq().getCbteTipo()) {
+            case 1:
+                tipoFact = "FacturaA";
+                break;
+            case 2:
+                tipoFact = "DébitoA";
+                break;
+            case 3:
+                tipoFact = "CréditoA";
+                break;
+            case 6:
+                tipoFact = "FacturaB";
+                break;
+            case 7:
+                tipoFact = "DébitoB";
+                break;
+            case 8:
+                tipoFact = "CréditoB";
+                break;
+            case 201:
+                tipoFact = "FacturaAFCE";
+                break;
+            case 202:
+                tipoFact = "DébitoAFCE";
+                break;
+            case 203:
+                tipoFact = "CréditoAFCE";
+                break;
+            case 206:
+                tipoFact = "FacturaBFCE";
+                break;
+            case 207:
+                tipoFact = "DébitoBFCE";
+                break;
+            case 208:
+                tipoFact = "CréditoBFCE";
+                break;
         }
+
         try {
 
             multipartFile = new MockMultipartFile("prueba.pdf", new FileInputStream(new File("temporal.pdf")));
@@ -1660,7 +1751,7 @@ public class GeneracionPDF {
         return tablaInformacion;
     }
 
-    private PdfPTable crearFooter() {
+    private PdfPTable crearFooter(String[] informacionCAE) {
         PdfPTable tablaFooter = new PdfPTable(new float[]{20, 22, 12, 46});
         tablaFooter.setWidthPercentage(100);
 
@@ -1691,7 +1782,7 @@ public class GeneracionPDF {
         cellQR3.setHorizontalAlignment(1);
 
         PdfPCell cellQR4 = new PdfPCell();
-        cellQR4.addElement(generarInfoCAE());
+        cellQR4.addElement(generarInfoCAE(informacionCAE));
         cellQR4.setPaddingTop(15);
         cellQR4.setBorder(-1);
 
@@ -1728,7 +1819,7 @@ public class GeneracionPDF {
         return tablaLogoAfip;
     }
 
-    private PdfPTable generarInfoCAE() {
+    private PdfPTable generarInfoCAE(String[] informacionCAE) {
         PdfPTable tablasCAE = new PdfPTable(new float[]{55, 45});
 
         //Linea de CAE
@@ -1741,7 +1832,7 @@ public class GeneracionPDF {
         cae.setHorizontalAlignment(2);
         tablasCAE.addCell(cae);
 
-        Phrase txtCaeInfo = new Phrase("72408744605024 \n\n");
+        Phrase txtCaeInfo = new Phrase(informacionCAE[5] + "\n\n");
         txtCaeInfo.font().setSize(10);
         PdfPCell caeInfo = new PdfPCell();
         caeInfo.setPhrase(txtCaeInfo);
@@ -1758,7 +1849,7 @@ public class GeneracionPDF {
         caeVto.setHorizontalAlignment(2);
         tablasCAE.addCell(caeVto);
 
-        Phrase txtCaeVtoInfo = new Phrase("12/12/2022");
+        Phrase txtCaeVtoInfo = new Phrase(informacionCAE[6].substring(6, 8) + "/" + informacionCAE[6].substring(4, 6) + "/" + informacionCAE[6].substring(0, 4));
         txtCaeVtoInfo.font().setSize(10);
         PdfPCell caeVtoInfo = new PdfPCell();
         caeVtoInfo.setPhrase(txtCaeVtoInfo);
