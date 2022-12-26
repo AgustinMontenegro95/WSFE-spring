@@ -93,54 +93,56 @@ public class GeneracionPDF {
             int cantInac = 0;
             boolean iva0 = false, iva2_5 = false, iva5 = false, iva10_5 = false, iva21 = false, iva27 = false;
 
-            for (Iva iva : informacion.getFeDetReq().getIva()) {
-                if (iva.getID() == 3) {
-                    iva0 = true;
+            if (informacion.getFeDetReq().getIva() != null) {
+                for (Iva iva : informacion.getFeDetReq().getIva()) {
+                    if (iva.getID() == 3) {
+                        iva0 = true;
+                    }
+
+                    if (iva.getID() == 9) {
+                        iva2_5 = true;
+                    }
+
+                    if (iva.getID() == 8) {
+                        iva5 = true;
+                    }
+
+                    if (iva.getID() == 4) {
+                        iva10_5 = true;
+                    }
+
+                    if (iva.getID() == 5) {
+                        iva21 = true;
+                    }
+
+                    if (iva.getID() == 6) {
+                        iva27 = true;
+                    }
                 }
 
-                if (iva.getID() == 9) {
-                    iva2_5 = true;
+                if (!iva0) {
+                    cantInac++;
                 }
 
-                if (iva.getID() == 8) {
-                    iva5 = true;
+                if (!iva2_5) {
+                    cantInac++;
                 }
 
-                if (iva.getID() == 4) {
-                    iva10_5 = true;
+                if (!iva5) {
+                    cantInac++;
                 }
 
-                if (iva.getID() == 5) {
-                    iva21 = true;
+                if (!iva10_5) {
+                    cantInac++;
                 }
 
-                if (iva.getID() == 6) {
-                    iva27 = true;
+                if (!iva21) {
+                    cantInac++;
                 }
-            }
 
-            if (!iva0) {
-                cantInac++;
-            }
-
-            if (!iva2_5) {
-                cantInac++;
-            }
-
-            if (!iva5) {
-                cantInac++;
-            }
-
-            if (!iva10_5) {
-                cantInac++;
-            }
-
-            if (!iva21) {
-                cantInac++;
-            }
-
-            if (!iva27) {
-                cantInac++;
+                if (!iva27) {
+                    cantInac++;
+                }
             }
 
             document.add(saltoLinea(5));
@@ -674,7 +676,7 @@ public class GeneracionPDF {
             domicilio.addElement(domicilioTable);
         }
         if (informacion.getCliente().getDniCuit().length() == 10 || informacion.getCliente().getDniCuit().length() == 11) {
-            PdfPTable domicilioTable = generarNegrita("Domicilio Comercial:", informacion.getCliente().getDomicilio(), 20, 80);
+            PdfPTable domicilioTable = generarNegrita("Domicilio Comercial:", informacion.getCliente().getDomicilio(), 33, 67);
             domicilio.addElement(domicilioTable);
         }
 
@@ -727,25 +729,25 @@ public class GeneracionPDF {
         if (informacion.getFeCabReq().getCbteTipo() == 3) {
             PdfPTable electronicaMiPyMEsTable = generarNegrita("Fac. A:",
                     String.format("%0" + 5 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getPtoVta())
-                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getTipo()), 17, 83);
+                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getNro()), 17, 83);
             electronicaMiPyMEs.addElement(electronicaMiPyMEsTable);
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 8) {
             PdfPTable electronicaMiPyMEsTable = generarNegrita("Fac. B:", String.format("%0" + 5 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getPtoVta())
-                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getTipo()), 17, 83);
+                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getNro()), 17, 83);
             electronicaMiPyMEs.addElement(electronicaMiPyMEsTable);
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 203) {
             PdfPTable electronicaMiPyMEsTable = generarNegrita("Factura de cré (FCE) A:", String.format("%0" + 5 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getPtoVta())
-                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getTipo()), 17, 83);
+                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getNro()), 17, 83);
             electronicaMiPyMEs.addElement(electronicaMiPyMEsTable);
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 208) {
             PdfPTable electronicaMiPyMEsTable = generarNegrita("Factura de cré (FCE) B:", String.format("%0" + 5 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getPtoVta())
-                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getTipo()), 17, 83);
+                    + "-" + String.format("%0" + 8 + "d", informacion.getFeDetReq().getCbtesAsoc()[0].getNro()), 17, 83);
             electronicaMiPyMEs.addElement(electronicaMiPyMEsTable);
         }
 
@@ -869,12 +871,15 @@ public class GeneracionPDF {
         importeNetoGravado.setPaddingRight(7);
 
         PdfPTable table = null;
-        String texto = String.valueOf(informacion.getFeDetReq().getImpNeto());
-        if (texto.charAt(texto.length() - 1) == '0') {
-            table = generarEspacios("Importe Neto Gravado: $", texto.concat("0"));
+
+        int ineto = (int) informacion.getFeDetReq().getImpNeto();
+        String impNeto;
+        if (ineto == 0) {
+            impNeto = "0,00";
         } else {
-            table = generarEspacios("Importe Neto Gravado: $", String.valueOf(informacion.getFeDetReq().getImpNeto()));
+            impNeto = String.valueOf(ineto);
         }
+        table = generarEspacios("Importe Neto Gravado: $", impNeto + ",00");
 
         importeNetoGravado.addElement(table);
 
@@ -1145,7 +1150,15 @@ public class GeneracionPDF {
         importeTotal.setPaddingRight(7);
         importeTotal.setPaddingBottom(5);
 
-        PdfPTable table = generarEspacios("Importe Total: $", String.valueOf(informacion.getFeDetReq().getImpTotal()), true);
+        int itot = (int) informacion.getFeDetReq().getImpTotal();
+        String imptot;
+        if (itot == 0) {
+            imptot = "0,00";
+        } else {
+            imptot = String.valueOf(itot);
+        }
+
+        PdfPTable table = generarEspacios("Importe Total: $", imptot + ",00", true);
         importeTotal.addElement(table);
 
         importeIva9.setWidthPercentage(100);
@@ -1196,7 +1209,7 @@ public class GeneracionPDF {
         }
 
         if (informacion.getFeCabReq().getCbteTipo() == 2 || informacion.getFeCabReq().getCbteTipo() == 7) {
-            nombreFactura = new Phrase("NOTA DE DÉBIDO");
+            nombreFactura = new Phrase("NOTA DE DÉBITO");
 
         }
 
@@ -1515,7 +1528,7 @@ public class GeneracionPDF {
 
             // Carga de la columna de cantidad
             PdfPCell infoCantidad = new PdfPCell();
-            Phrase infoCantidadTxt = new Phrase(String.valueOf(detalleFactura.getCantidad()));
+            Phrase infoCantidadTxt = new Phrase(String.valueOf(detalleFactura.getCantidad()) + ",00");
             infoCantidadTxt.font().setSize(8);
             infoCantidad.setPhrase(infoCantidadTxt);
             infoCantidad.setHorizontalAlignment(1);
@@ -1533,7 +1546,8 @@ public class GeneracionPDF {
 
             // Carga de la columna de precio unitario
             PdfPCell infoPrecUnit = new PdfPCell();
-            Phrase infoPrecUnitTxt = new Phrase(String.valueOf(detalleFactura.getPrecioUnitario()));
+            int precioUnitario = (int) detalleFactura.getPrecioUnitario();
+            Phrase infoPrecUnitTxt = new Phrase(String.valueOf(precioUnitario) + ",00");
             infoPrecUnitTxt.font().setSize(8);
             infoPrecUnit.setPhrase(infoPrecUnitTxt);
             infoPrecUnit.setHorizontalAlignment(1);
@@ -1542,7 +1556,14 @@ public class GeneracionPDF {
 
             // Carga de la columna de porcentaje bonificacion
             PdfPCell infoPorcBonif = new PdfPCell();
-            Phrase infoPorcBonifTxt = new Phrase(String.valueOf(detalleFactura.getBonificacion()));
+            int porcBonif = (int) detalleFactura.getBonificacion();
+            String porBon;
+            if (porcBonif == 0) {
+                porBon = "0,00";
+            } else {
+                porBon = String.valueOf(porcBonif);
+            }
+            Phrase infoPorcBonifTxt = new Phrase(porBon);
             infoPorcBonifTxt.font().setSize(8);
             infoPorcBonif.setPhrase(infoPorcBonifTxt);
             infoPorcBonif.setHorizontalAlignment(1);
@@ -1551,7 +1572,16 @@ public class GeneracionPDF {
 
             // Carga de la columna de imp bonificacion
             PdfPCell infoImpBonif = new PdfPCell();
-            Phrase infoImpBonifTxt = new Phrase(String.valueOf(detalleFactura.getImpBonificacion()));
+            
+            int iBon = (int) detalleFactura.getSubtotal();
+            String iBonif;
+            if (porcBonif == 0) {
+                iBonif = "0,00";
+            } else {
+                iBonif = String.valueOf(iBon);
+            }
+            
+            Phrase infoImpBonifTxt = new Phrase(iBonif);
             infoImpBonifTxt.font().setSize(8);
             infoImpBonif.setPhrase(infoImpBonifTxt);
             infoImpBonif.setHorizontalAlignment(1);
@@ -1560,7 +1590,14 @@ public class GeneracionPDF {
 
             // Carga de la columna de subtotal
             PdfPCell infoSubtotal = new PdfPCell();
-            Phrase infoSubtotalTxt = new Phrase(String.valueOf(detalleFactura.getSubtotal()));
+            int subt = (int) detalleFactura.getSubtotal();
+            String stotal;
+            if (porcBonif == 0) {
+                stotal = "0,00";
+            } else {
+                stotal = String.valueOf(subt);
+            }
+            Phrase infoSubtotalTxt = new Phrase(stotal);
             infoSubtotalTxt.font().setSize(8);
             infoSubtotal.setPhrase(infoSubtotalTxt);
             infoSubtotal.setHorizontalAlignment(1);
@@ -1686,7 +1723,7 @@ public class GeneracionPDF {
 
             // Carga de la columna de cantidad
             PdfPCell infoCantidad = new PdfPCell();
-            Phrase infoCantidadTxt = new Phrase(String.valueOf(detalleFactura.getCantidad()));
+            Phrase infoCantidadTxt = new Phrase(String.valueOf(detalleFactura.getCantidad()) + ",00");
             infoCantidadTxt.font().setSize(8);
             infoCantidad.setPhrase(infoCantidadTxt);
             infoCantidad.setHorizontalAlignment(1);
@@ -1704,7 +1741,8 @@ public class GeneracionPDF {
 
             // Carga de la columna de precio unitario
             PdfPCell infoPrecUnit = new PdfPCell();
-            Phrase infoPrecUnitTxt = new Phrase(String.valueOf(detalleFactura.getPrecioUnitario()));
+            int precioUnitario = (int) detalleFactura.getPrecioUnitario();
+            Phrase infoPrecUnitTxt = new Phrase(String.valueOf(precioUnitario) + ",00");
             infoPrecUnitTxt.font().setSize(8);
             infoPrecUnit.setPhrase(infoPrecUnitTxt);
             infoPrecUnit.setHorizontalAlignment(1);
@@ -1713,7 +1751,14 @@ public class GeneracionPDF {
 
             // Carga de la columna de porcentaje bonificacion
             PdfPCell infoPorcBonif = new PdfPCell();
-            Phrase infoPorcBonifTxt = new Phrase(String.valueOf(detalleFactura.getBonificacion()));
+            int porcBonif = (int) detalleFactura.getBonificacion();
+            String porBon;
+            if (porcBonif == 0) {
+                porBon = "0,00";
+            } else {
+                porBon = String.valueOf(porcBonif);
+            }
+            Phrase infoPorcBonifTxt = new Phrase(porBon);
             infoPorcBonifTxt.font().setSize(8);
             infoPorcBonif.setPhrase(infoPorcBonifTxt);
             infoPorcBonif.setHorizontalAlignment(1);
@@ -1722,7 +1767,14 @@ public class GeneracionPDF {
 
             // Carga de la columna de subtotal
             PdfPCell infoSubtotal = new PdfPCell();
-            Phrase infoSubtotalTxt = new Phrase(String.valueOf(detalleFactura.getSubtotal()));
+            int subt = (int) detalleFactura.getSubtotal();
+            String stotal;
+            if (porcBonif == 0) {
+                stotal = "0,00";
+            } else {
+                stotal = String.valueOf(subt);
+            }
+            Phrase infoSubtotalTxt = new Phrase(stotal);
             infoSubtotalTxt.font().setSize(8);
             infoSubtotal.setPhrase(infoSubtotalTxt);
             infoSubtotal.setHorizontalAlignment(1);
@@ -1731,7 +1783,7 @@ public class GeneracionPDF {
 
             // Carga de la columna de alicuota IVA
             PdfPCell infoAlicIva = new PdfPCell();
-            Phrase infoAlicIVATxt = new Phrase(String.valueOf(detalleFactura.getAlicuotaIVA()));
+            Phrase infoAlicIVATxt = new Phrase(String.valueOf(detalleFactura.getAlicuotaIVA()) + "%");
             infoAlicIVATxt.font().setSize(8);
             infoAlicIva.setPhrase(infoAlicIVATxt);
             infoAlicIva.setHorizontalAlignment(1);
@@ -1740,7 +1792,7 @@ public class GeneracionPDF {
 
             // Carga de la columna de subtotalConIVA
             PdfPCell infoSubtotalCIVA = new PdfPCell();
-            Phrase infoSubtotalCIVATxt = new Phrase(String.valueOf(detalleFactura.getSubTotalCIVA()));
+            Phrase infoSubtotalCIVATxt = new Phrase(String.valueOf(detalleFactura.getSubTotalCIVA()) + ",00");
             infoSubtotalCIVATxt.font().setSize(8);
             infoSubtotalCIVA.setPhrase(infoSubtotalCIVATxt);
             infoSubtotalCIVA.setHorizontalAlignment(1);
@@ -1823,7 +1875,7 @@ public class GeneracionPDF {
         PdfPTable tablasCAE = new PdfPTable(new float[]{55, 45});
 
         //Linea de CAE
-        Phrase txtCae = new Phrase("CAE: ");
+        Phrase txtCae = new Phrase("CAE N°: ");
         txtCae.font().setStyle(Font.BOLD);
         txtCae.font().setSize(9);
         PdfPCell cae = new PdfPCell();
