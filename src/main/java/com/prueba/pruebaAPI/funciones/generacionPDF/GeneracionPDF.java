@@ -1380,7 +1380,8 @@ public class GeneracionPDF {
         PdfPCell fchEmision = new PdfPCell();
         fchEmision.setPaddingLeft(30);
         fchEmision.setBorder(0);
-        Phrase fechaEmision = new Phrase("Fecha de emisión:  " + informacion.getFeDetReq().getCbteFch().substring(5, 7) + "/" + informacion.getFeDetReq().getCbteFch().substring(3, 5) + "/" + informacion.getFeDetReq().getCbteFch().substring(0, 4));
+        System.out.println("Fecha emi: " + informacion.getFeDetReq().getCbteFch());
+        Phrase fechaEmision = new Phrase("Fecha de emisión:  " + informacion.getFeDetReq().getCbteFch().substring(6) + "/" + informacion.getFeDetReq().getCbteFch().substring(4, 6) + "/" + informacion.getFeDetReq().getCbteFch().substring(0, 4));
         fechaEmision.font().setSize(8);
         fechaEmision.font().setStyle(Font.BOLD);
         fchEmision.addElement(fechaEmision);
